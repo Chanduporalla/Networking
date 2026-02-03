@@ -1,113 +1,93 @@
 import tkinter as tk
-from tkinter import filedialog, ttk, messagebox
+from tkinter import ttk, filedialog
 from scapy.all import rdpcap
 import textwrap
 
-class PcapVisualizer:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Network Packet Visualizer")
-        self.root.geometry("1100x600")
-
-        # Header
-        tk.Label(
-            root,
-            text="🛜 Network Packet Visualizer (Wireshark-style)",
-            font=("Consolas", 16, "bold")
-        ).pack(pady=5)
-
-        # Open button
-        tk.Button(
-            root,
-            text="Open PCAP File",
-            command=self.open_file,
-            width=20
-        ).pack(pady=5)
-
-        # Packet list
-        self.tree = ttk.Treeview(
-            root,
-            columns=("No", "Time", "Source", "Destination", "Protocol"),
-            show="headings",
-            height=8
-        )
-        for col in self.tree["columns"]:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, anchor="center")
-
-        self.tree.pack(fill=tk.X, padx=10)
-        self.tree.bind("<<TreeviewSelect>>", self.show_packet)
-
-        # Split view
-        paned = tk.PanedWindow(root, orient=tk.HORIZONTAL)
-        paned.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-
-        # LEFT → Raw data
-        left_frame = tk.LabelFrame(paned, text="Raw Packet Data (HEX)")
-        self.raw_text = tk.Text(left_frame, font=("Consolas", 10))
-        self.raw_text.pack(fill=tk.BOTH, expand=True)
-        paned.add(left_frame)
-
-        # RIGHT → Visual representation
-        right_frame = tk.LabelFrame(paned, text="Decoded Packet View")
-        self.decoded_text = tk.Text(right_frame, font=("Consolas", 10))
-        self.decoded_text.pack(fill=tk.BOTH, expand=True)
-        paned.add(right_frame)
+class NetworkVisualizer(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Network Traffic Visualizer")
+        self.geometry("1200x700")
 
         self.packets = []
 
-    def open_file(self):
-        file_path = filedialog.askopenfilename(
-            filetypes=[("PCAP Files", "*.pcap *.pcapng")]
-        )
-        if not file_path:
-            return
+        self.create_menu()
+        self.create_packet_table()
+        self.create_bottom_panes()
 
-        try:
-            self.packets = rdpcap(file_path)
-            self.tree.delete(*self.tree.get_children())
+    def create_menu(self):
+        menu = tk.Menu(self)
+        file_menu = tk.Menu(menu, tearoff=0)
+        file_menu.add_command(label="Open PCAP", command=self.load_pcap)
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit", command=self.quit)
 
-            for i, pkt in enumerate(self.packets, start=1):
-                src = pkt[0].src if hasattr(pkt[0], "src") else "N/A"
-                dst = pkt[0].dst if hasattr(pkt[0], "dst") else "N/A"
-                proto = pkt.lastlayer().name
+        menu.add_cascade(label="File", menu=file_menu)
+        self.config(menu=menu)
 
-                self.tree.insert(
-                    "", "end", iid=i-1,
-                    values=(i, f"{pkt.time:.6f}", src, dst, proto)
-                )
+    def create_packet_table(self):
+        columns = ("No", "Time", "Source", "Destination", "Protocol", "Length")
+        self.table = ttk.Treeview(self, columns=columns, show="headings", height=12)
 
-        except Exception as e:
-            messagebox.showerror("Error", str(e))
+        for col in columns:
+            self.table.heading(col, text=col)
+            self.table.column(col, anchor="center")
 
-    def show_packet(self, event):
-        selected = self.tree.selection()
-        if not selected:
-            return
+        self.table.pack(fill=tk.X)
+        self.table.bind("<<TreeviewSelect>>", self.display_packet)
 
-        pkt = self.packets[int(selected[0])]
+    def create_bottom_panes(self):
+        paned = tk.PanedWindow(self, orient=tk.HORIZONTAL)
+        paned.pack(fill=tk.BOTH, expand=True)
 
         # RAW HEX VIEW
-        raw_bytes = bytes(pkt)
-        hex_dump = " ".join(f"{b:02X}" for b in raw_bytes)
+        left = tk.LabelFrame(paned, text="Raw Packet Bytes (HEX)")
+        self.hex_view = tk.Text(left, font=("Consolas", 10))
+        self.hex_view.pack(fill=tk.BOTH, expand=True)
+        paned.add(left)
+
+        # PACKET DETAILS VIEW
+        right = tk.LabelFrame(paned, text="Packet Details (Decoded)")
+        self.details = tk.Text(right, font=("Consolas", 10))
+        self.details.pack(fill=tk.BOTH, expand=True)
+        paned.add(right)
+
+    def load_pcap(self):
+        path = filedialog.askopenfilename(
+            filetypes=[("PCAP Files", "*.pcap *.pcapng")]
+        )
+        if not path:
+            return
+
+        self.packets = rdpcap(path)
+        self.table.delete(*self.table.get_children())
+
+        for i, pkt in enumerate(self.packets, 1):
+            src = pkt[0].src if hasattr(pkt[0], "src") else "N/A"
+            dst = pkt[0].dst if hasattr(pkt[0], "dst") else "N/A"
+            proto = pkt.lastlayer().name
+            self.table.insert("", "end", iid=i-1,
+                values=(i, f"{pkt.time:.6f}", src, dst, proto, len(pkt)))
+
+    def display_packet(self, event):
+        idx = int(self.table.selection()[0])
+        pkt = self.packets[idx]
+
+        # HEX
+        raw = bytes(pkt)
+        hex_dump = " ".join(f"{b:02X}" for b in raw)
         hex_dump = "\n".join(textwrap.wrap(hex_dump, 48))
+        self.hex_view.delete("1.0", tk.END)
+        self.hex_view.insert(tk.END, hex_dump)
 
-        self.raw_text.delete("1.0", tk.END)
-        self.raw_text.insert(tk.END, hex_dump)
-
-        # DECODED VIEW
-        decoded = ""
+        # DECODED
+        self.details.delete("1.0", tk.END)
         for layer in pkt.layers():
-            decoded += f"\n▶ {layer.__name__}\n"
-            decoded += "-" * 40 + "\n"
+            self.details.insert(tk.END, f"\n▶ {layer.__name__}\n")
+            self.details.insert(tk.END, "-" * 40 + "\n")
             for field, value in pkt[layer].fields.items():
-                decoded += f"{field:15}: {value}\n"
-
-        self.decoded_text.delete("1.0", tk.END)
-        self.decoded_text.insert(tk.END, decoded)
+                self.details.insert(tk.END, f"{field:15}: {value}\n")
 
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = PcapVisualizer(root)
-    root.mainloop()
+    NetworkVisualizer().mainloop()
