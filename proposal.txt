@@ -1,0 +1,201 @@
+# NetVision AI
+
+## AI‑Powered Network Traffic Visualizer & Packet Intelligence Platform
+
+---
+
+## 1. Project Overview
+
+**NetVision AI** is a desktop-based network traffic visualizer and packet analysis platform inspired by Wireshark and enhanced with Artificial Intelligence. The application enables users to load and analyze PCAP/PCAPNG files, visualize raw and decoded packet data, perform traffic analysis, and interact with an AI assistant for explanations, learning, and threat detection.
+
+This project is designed for:
+
+* Networking & Cybersecurity learning
+* Interview preparation
+* Traffic troubleshooting
+* Security analysis demonstrations
+
+---
+
+## 2. Objectives
+
+* Build a Wireshark-like desktop application using Python
+* Provide deep packet inspection (DPI)
+* Visualize raw packet bytes and decoded protocol layers
+* Implement Wireshark-style display filters
+* Integrate AI for packet explanation, traffic summaries, and anomaly detection
+* Maintain security by avoiding raw packet uploads to cloud AI
+
+---
+
+## 3. Key Features
+
+### 3.1 Packet Visualization
+
+* Open and parse PCAP / PCAPNG files
+* Packet list with time, source, destination, protocol, length
+* Raw packet data in hexadecimal format
+* Layer-by-layer decoded packet structure
+
+### 3.2 Packet Analysis
+
+* Ethernet, IP, TCP, UDP, ICMP, DNS, HTTP support
+* TCP flags, sequence and acknowledgment numbers
+* TCP stream reconstruction (Follow TCP Stream)
+* Flow-based conversation tracking
+
+### 3.3 Filters (Wireshark-Style)
+
+* Protocol filters: tcp, udp, icmp
+* Address filters: ip.addr == X.X.X.X
+* Port filters: tcp.port == 80
+
+### 3.4 Traffic Statistics
+
+* Protocol distribution
+* Top talkers (most active IPs)
+* Packet and bandwidth usage statistics
+* Error and retransmission counters
+
+---
+
+## 4. AI Integration
+
+### 4.1 AI Capabilities
+
+The integrated AI assistant provides:
+
+* Plain-English explanation of selected packets
+* Capture-level traffic summaries
+* Detection of suspicious patterns (e.g., SYN floods, port scans)
+* Learning mode for beginners
+* Interview-oriented Q&A generation
+* Suggested filters based on traffic patterns
+
+### 4.2 AI Safety Strategy
+
+* Raw PCAP files are never sent to AI services
+* Only structured summaries and metadata are shared
+* Offline local LLM support (optional)
+
+Example AI input structure:
+
+```
+{
+  "protocols": {"TCP": 120, "UDP": 30},
+  "top_ports": [80, 443],
+  "anomalies": ["High SYN rate from 10.0.0.5"]
+}
+```
+
+---
+
+## 5. System Architecture
+
+```
+NetVisionAI/
+│
+├── main.py
+│
+├── ui/
+│   ├── main_window.py
+│   ├── packet_table.py
+│   ├── hex_view.py
+│   ├── details_tree.py
+│   ├── ai_panel.py
+│   └── theme.py
+│
+├── capture/
+│   ├── pcap_loader.py
+│   └── live_capture.py
+│
+├── analyzer/
+│   ├── protocol_parser.py
+│   ├── flows.py
+│   ├── filters.py
+│   ├── statistics.py
+│   └── threat_rules.py
+│
+├── ai/
+│   ├── ai_engine.py
+│   ├── prompt_builder.py
+│   ├── packet_summarizer.py
+│   └── anomaly_detector.py
+│
+├── reports/
+│   └── report_generator.py
+│
+└── requirements.txt
+```
+
+---
+
+## 6. User Interface Design
+
+### Layout
+
+* Menu Bar: File | Capture | Analyze | AI Assistant | Help
+* Toolbar: Open PCAP, Start Capture
+* Packet List (Top Panel)
+* Bottom Split View:
+
+  * Left: Raw Packet Bytes (HEX)
+  * Right: Decoded Packet Details (Tree View)
+* AI Assistant Panel (Bottom)
+* Status Bar
+
+---
+
+## 7. Technology Stack
+
+* Programming Language: Python
+* GUI Framework: Tkinter
+* Packet Parsing: Scapy
+* AI Integration: OpenAI API or Local LLM (Ollama)
+* OS Support: Linux, Windows
+
+---
+
+## 8. Development Phases
+
+### Phase 1: Core Visualizer
+
+* PCAP loading
+* Packet list view
+* Raw and decoded views
+
+### Phase 2: Analysis Features
+
+* Filters
+* TCP stream reconstruction
+* Traffic statistics
+
+### Phase 3: AI Integration
+
+* AI packet explanation
+* Traffic summaries
+* Learning mode
+
+### Phase 4: Security & Reporting
+
+* Threat detection
+* Report generation (Text / PDF)
+
+---
+
+## 9. Resume Description
+
+**NetVision AI – AI‑Powered Network Traffic Visualizer**
+
+Designed and implemented a Python-based desktop application inspired by Wireshark, capable of visualizing and analyzing network traffic from PCAP files. Integrated an AI assistant to explain packet behavior, summarize captures, and detect suspicious patterns, enhancing both learning and security analysis.
+
+---
+
+## 10. Conclusion
+
+NetVision AI bridges the gap between traditional packet analyzers and intelligent network understanding tools. By combining deep packet inspection with AI-driven insights, the platform serves as a powerful educational, analytical, and security-focused solution.
+
+---
+
+**Author:** Porallla Chandu
+**Domain:** Networking | Cybersecurity | AI Integration
