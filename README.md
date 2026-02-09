@@ -1,4 +1,4 @@
-# Network Traffic Analyzer - Desktop Application
+Network Traffic Analyzer - Desktop Application
 
 A powerful desktop application for analyzing network traffic capture files (.pcap/.pcapng) with visual analytics and AI-powered traffic insights. Built with Python, Tkinter, and Scapy.
 
